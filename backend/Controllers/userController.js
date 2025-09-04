@@ -56,8 +56,8 @@ export const signin = async (req, res) => {
       .cookie("threadtoken", accessToken, {
         maxAge: 1000 * 60 * 60 * 24,
         httpOnly: true,
-        sameSite: "strict",
-        secure: false,
+        sameSite: "none", //"strict"
+        secure: true, //false
       })
       .status(200)
       .json({
