@@ -10,7 +10,7 @@ import {
 export const serviceApi = createApi({
   reducerPath: "serviceApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "https://threadsocial.onrender.com",
+    baseUrl: "http://localhost:3000",
     credentials: "include",
   }),
   keepUnusedDataFor: 60 * 60 * 24 * 7,

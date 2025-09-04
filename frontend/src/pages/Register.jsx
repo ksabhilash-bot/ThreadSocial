@@ -5,6 +5,7 @@ import {
   Typography,
   IconButton,
   InputAdornment,
+  CircularProgress,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
@@ -20,49 +21,83 @@ const Register = () => {
   const [username, setUserName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showpassword, setShowPassword] = useState(false);
+  const [showpassword, setShowPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
   const toogleLogin = () => {
     setLogin(!login);
   };
+
   const handleLogin = async () => {
     if (email === "" || password === "") {
       toast.error("Please Enter all fields");
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      toast.error("Please enter an valid email");
+      toast.error("Please enter a valid email");
       return;
     }
-    const data = { email, password };
-    const res = await loginUser(data);
-    console.log(res.data.success)
-    if(res.data.success){
-      navigate('/')
+
+    setIsLoading(true);
+    try {
+      const data = { email, password };
+      const res = await loginUser(data);
+      console.log(res.data.success);
+      if (res.data.success) {
+        toast.success("Login successful!");
+        navigate("/");
+      }
+      setEmail("");
+      setPassword("");
+    } catch (error) {
+      toast.error("Login failed. Please try again.");
+      console.error("Login error:", error);
+    } finally {
+      setIsLoading(false);
     }
-    setEmail("");
-    setPassword("");
   };
+
   const handleRegister = async () => {
     if (username === "" || email === "" || password === "") {
       toast.error("Please Enter all fields");
       return;
     }
-    const data = { username, email, password };
-    await signinUser(data);
-    setUserName("");
-    setEmail("");
-    setPassword("");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast.error("Please enter a valid email");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const data = { username, email, password };
+      await signinUser(data);
+      setUserName("");
+      setEmail("");
+      setPassword("");
+    } catch (error) {
+      toast.error("Registration failed. Please try again.");
+      console.error("Registration error:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
+
   useEffect(() => {
     if (signinUserData.isSuccess) {
+      toast.success("Registration successful!");
       console.log(signinUserData);
     }
-  }, [signinUserData.isSuccess]);
+    if (signinUserData.isError) {
+      toast.error("Registration failed. Please try again.");
+    }
+  }, [signinUserData.isSuccess, signinUserData.isError]);
+
   useEffect(() => {
     if (isSuccess) {
       console.log("login success");
     }
   }, [isSuccess]);
+
   return (
     <>
       <Stack
@@ -101,6 +136,7 @@ const Register = () => {
           {login ? null : (
             <TextField
               color="primary"
+              disabled={isLoading}
               sx={{
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "20px",
@@ -131,6 +167,7 @@ const Register = () => {
 
           <TextField
             value={email}
+            disabled={isLoading}
             onChange={(e) => setEmail(e.target.value)}
             sx={{
               "& .MuiOutlinedInput-root": {
@@ -158,6 +195,7 @@ const Register = () => {
           />
           <TextField
             value={password}
+            disabled={isLoading}
             onChange={(e) => setPassword(e.target.value)}
             type={showpassword ? "text" : "password"}
             label="Enter your password"
@@ -167,6 +205,7 @@ const Register = () => {
                   <IconButton
                     onClick={() => setShowPassword((prev) => !prev)}
                     edge="end"
+                    disabled={isLoading}
                   >
                     {showpassword ? (
                       <FaEyeSlash color="white" />
@@ -204,18 +243,32 @@ const Register = () => {
           <Button
             variant={"outlined"}
             color="black"
+            disabled={isLoading}
             sx={{
               bgcolor: "#292727",
               color: "white",
-
               borderRadius: "10px",
               "&:hover": {
                 bgcolor: "black",
               },
+              "&:disabled": {
+                bgcolor: "#1a1818",
+                color: "#666",
+                cursor: "not-allowed",
+              },
             }}
             onClick={login ? handleLogin : handleRegister}
+            startIcon={
+              isLoading ? <CircularProgress size={20} color="inherit" /> : null
+            }
           >
-            {login ? "LOGIN" : "REGISTER"}
+            {isLoading
+              ? login
+                ? "LOGGING IN..."
+                : "REGISTERING..."
+              : login
+              ? "LOGIN"
+              : "REGISTER"}
           </Button>
           <Typography
             variant="h4"
@@ -234,8 +287,12 @@ const Register = () => {
           >
             {login ? "Don't have an Account? " : "Already have an account?"}
             <span
-              className="inline-block text-white hover:cursor-pointer hover:text-zinc-950 underline"
-              onClick={toogleLogin}
+              className={`inline-block text-white underline ${
+                isLoading
+                  ? "cursor-not-allowed opacity-50"
+                  : "hover:cursor-pointer hover:text-zinc-950"
+              }`}
+              onClick={isLoading ? undefined : toogleLogin}
             >
               {login ? "Register" : "Login"}
             </span>{" "}

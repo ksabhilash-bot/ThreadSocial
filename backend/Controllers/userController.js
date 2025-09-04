@@ -56,8 +56,8 @@ export const signin = async (req, res) => {
       .cookie("threadtoken", accessToken, {
         maxAge: 1000 * 60 * 60 * 24,
         httpOnly: true,
-        sameSite: "none",
-        secure: true,
+        sameSite: "strict",
+        secure: false,
       })
       .status(200)
       .json({
@@ -109,8 +109,8 @@ export const login = async (req, res) => {
       .cookie("threadtoken", accessToken, {
         maxAge: 1000 * 60 * 60 * 24,
         httpOnly: true,
-        sameSite: "none",
-        secure: true,
+        sameSite: "strict",
+        secure: false,
       })
       .json({
         success: true,
